@@ -1,19 +1,26 @@
-# 部署说明
+# 智能教学实训平台 - 部署指南
 
-## 环境要求
+## 📋 部署概述
 
-### 系统要求
-- 操作系统: Windows 10+, macOS 10.15+, Ubuntu 18.04+
-- 内存: 最少 4GB RAM
-- 存储: 最少 10GB 可用空间
+本文档详细说明智能教学实训平台的部署流程，包括开发环境、测试环境和生产环境的配置。
+
+## 🛠️ 环境要求
+
+### 硬件要求
+- **CPU**: 2核心以上
+- **内存**: 4GB以上
+- **存储**: 20GB以上可用空间
+- **网络**: 稳定的互联网连接
 
 ### 软件要求
-- Go 1.19+
-- Node.js 16+
-- MySQL 8.0+
-- Redis 6.0+
+- **操作系统**: Linux (Ubuntu 20.04+), Windows 10+, macOS 10.15+
+- **Go**: 1.21+
+- **Node.js**: 18+
+- **MySQL**: 8.0+
+- **Redis**: 6.0+
+- **Docker**: 20.10+ (可选，用于容器化部署)
 
-## 安装步骤
+## 🚀 快速部署
 
 ### 1. 克隆项目
 ```bash
@@ -21,77 +28,94 @@ git clone <repository-url>
 cd softwarecup
 ```
 
-### 2. 安装依赖
+### 2. 环境检查
+```bash
+# 检查Go版本
+go version
 
-#### 后端依赖
+# 检查Node.js版本
+node --version
+
+# 检查MySQL
+mysql --version
+
+# 检查Redis
+redis-server --version
+```
+
+### 3. 数据库初始化
+```bash
+# 创建数据库
+mysql -u root -p < scripts/init.sql
+
+# 或手动创建
+mysql -u root -p
+CREATE DATABASE softwarecup CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 4. 后端配置
 ```bash
 cd backend
+
+# 安装依赖
 go mod tidy
+
+# 复制配置文件
+cp config/config.example.yaml config/config.yaml
+
+# 编辑配置文件
+vim config/config.yaml
 ```
 
-#### 前端依赖
-```bash
-cd frontend
-npm install
-```
-
-### 3. 配置数据库
-
-#### 创建数据库
-```sql
-CREATE DATABASE teaching_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-#### 运行初始化脚本
-```bash
-mysql -u root -p teaching_platform < scripts/init.sql
-```
-
-### 4. 配置Redis
-确保Redis服务正在运行：
-```bash
-# Ubuntu/Debian
-sudo systemctl start redis-server
-
-# macOS
-brew services start redis
-
-# Windows
-redis-server
-```
-
-### 5. 配置文件
-
-#### 后端配置
-编辑 `backend/config/config.yaml`：
+配置文件示例：
 ```yaml
 server:
-  port: ":8080"
-  mode: "debug"
+  port: 3002
+  mode: debug
 
 database:
-  host: "localhost"
-  port: "3306"
-  username: "your_username"
-  password: "your_password"
-  dbname: "teaching_platform"
+  host: localhost
+  port: 3306
+  username: root
+  password: your_password
+  database: softwarecup
 
 redis:
-  host: "localhost"
-  port: "6379"
+  host: localhost
+  port: 6379
   password: ""
   db: 0
 
-jwt:
-  secret: "your-secret-key-here"
-  expire: 24
-
 ai:
-  api_key: "your-openai-api-key"
-  base_url: "https://api.openai.com/v1"
-  model: "gpt-3.5-turbo"
-  max_tokens: 2000
+  provider: "xunfei"  # xunfei, deepseek, local, openai
+  openai_api_key: "your_openai_key"
+  max_tokens: 2048
   temperature: 0.7
+
+xunfei:
+  app_id: "your_app_id"
+  api_key: "your_api_key"
+  api_secret: "your_api_secret"
+```
+
+### 5. 前端配置
+```bash
+cd frontend
+
+# 安装依赖
+npm install
+
+# 配置API地址
+# 编辑 src/api/index.js 中的 baseURL
+```
+
+### 6. 启动服务
+```bash
+# 启动后端 (在backend目录)
+go run main.go
+
+# 启动前端 (在frontend目录)
+npm run dev
 ```
 
 ### 6. 启动服务

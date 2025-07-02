@@ -1,372 +1,593 @@
 # DeepSeek API 配置指南
 
-## 概述
+## 📋 概述
 
-本指南将帮助您配置 DeepSeek API 服务，将其集成到教学培训平台中。DeepSeek 提供了强大的代码生成和编程辅助能力。
+DeepSeek是专注于代码生成和编程教学的大语言模型，具有优秀的代码理解和生成能力。本平台集成DeepSeek API作为备用AI服务，特别适合编程教学场景。
 
-## 1. 获取 API 密钥
+## 🚀 主要特性
 
-### 注册账号
-1. 访问 [DeepSeek Platform](https://platform.deepseek.com/)
-2. 点击 "Sign Up" 注册账号
-3. 验证邮箱地址
+- **代码生成**：优秀的代码生成和补全能力
+- **编程教学**：专精编程语言教学和解释
+- **多语言支持**：支持Python、Java、C++、JavaScript等主流编程语言
+- **成本优势**：相比其他AI服务，成本更加合理
+- **稳定可靠**：API服务稳定，响应速度快
 
-### 获取 API Key
-1. 登录后进入 [API Keys](https://platform.deepseek.com/api_keys) 页面
-2. 点击 "Create API Key"
-3. 输入密钥名称（如：teaching-platform）
-4. 复制生成的 API Key（注意保存，只显示一次）
+## 🔧 配置步骤
 
-## 2. 配置项目
+### 1. 注册DeepSeek平台
 
-### 更新配置文件
+1. 访问 [DeepSeek官网](https://www.deepseek.com/)
+2. 注册账号并完成邮箱验证
+3. 进入API控制台，获取API密钥
 
+### 2. 获取API密钥
+
+1. 登录DeepSeek控制台
+2. 进入"API Keys"页面
+3. 点击"Create API Key"创建新的API密钥
+4. 复制并保存API密钥（注意：密钥只显示一次）
+
+### 3. 配置后端
+
+#### 修改配置文件
 编辑 `backend/config/config.yaml`：
 
 ```yaml
-# AI服务配置
 ai:
-  # DeepSeek API配置
-  provider: "deepseek"  # deepseek, openai
-  api_key: "sk-your-deepseek-api-key-here"
-  base_url: "https://api.deepseek.com/v1"
-  model: "deepseek-coder"  # deepseek-coder, deepseek-chat
-  max_tokens: 2000
+  provider: "deepseek"  # 设置为DeepSeek服务
+  max_tokens: 2048
   temperature: 0.7
+
+deepseek:
+  api_key: "your_deepseek_api_key_here"
+  base_url: "https://api.deepseek.com/v1"
+  model: "deepseek-chat"
   timeout: 60
-  
-  # OpenAI配置（备用）
-  openai_api_key: "sk-your-openai-api-key-here"
-  openai_base_url: "https://api.openai.com/v1"
-  openai_model: "gpt-3.5-turbo"
 ```
 
-### 环境变量配置（推荐）
-
-创建 `.env` 文件：
-
+#### 环境变量配置（可选）
 ```bash
-# DeepSeek API
-DEEPSEEK_API_KEY=sk-your-deepseek-api-key-here
-DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
-DEEPSEEK_MODEL=deepseek-coder
-
-# OpenAI API (备用)
-OPENAI_API_KEY=sk-your-openai-api-key-here
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL=gpt-3.5-turbo
+export DEEPSEEK_API_KEY="your_deepseek_api_key_here"
+export DEEPSEEK_BASE_URL="https://api.deepseek.com/v1"
+export DEEPSEEK_MODEL="deepseek-chat"
 ```
 
-## 3. 可用模型
+### 4. 测试配置
 
-### DeepSeek 模型列表
-
-| 模型名称 | 类型 | 特点 | 适用场景 |
-|---------|------|------|----------|
-| `deepseek-coder` | 代码生成 | 专精代码生成和编程 | 编程教学、代码审查 |
-| `deepseek-chat` | 通用对话 | 通用对话能力 | 教学问答、内容生成 |
-| `deepseek-coder-33b-instruct` | 代码生成 | 更大模型，更高质量 | 复杂编程任务 |
-
-### 模型选择建议
-
-- **编程教学**: 使用 `deepseek-coder`
-- **通用教学**: 使用 `deepseek-chat`
-- **高级编程**: 使用 `deepseek-coder-33b-instruct`
-
-## 4. API 使用示例
-
-### 基础文本生成
-
+#### 使用测试脚本
 ```bash
-curl -X POST https://api.deepseek.com/v1/chat/completions \
+cd scripts
+python test_deepseek_api.py
+```
+
+#### 手动测试
+```bash
+curl -X POST http://localhost:3002/api/v1/chat/messages \
+  -H "Authorization: Bearer your_token" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-your-api-key" \
   -d '{
-    "model": "deepseek-coder",
-    "messages": [
-      {"role": "user", "content": "Write a Python function to calculate fibonacci numbers"}
-    ],
-    "max_tokens": 2000,
-    "temperature": 0.7
+    "session_id": 1,
+    "content": "请用Python写一个简单的计算器函数",
+    "type": "text"
   }'
 ```
 
-### 编程教学场景
+## 🌐 API接口
 
-```bash
-curl -X POST https://api.deepseek.com/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-your-api-key" \
-  -d '{
-    "model": "deepseek-coder",
-    "messages": [
-      {"role": "system", "content": "You are a programming teacher helping students learn Python."},
-      {"role": "user", "content": "Explain how to use list comprehensions in Python with examples"}
-    ],
-    "max_tokens": 2000,
-    "temperature": 0.7
-  }'
+### 基础聊天接口
+```
+POST https://api.deepseek.com/v1/chat/completions
 ```
 
-## 5. 集成到教学平台
+### 请求头
+```
+Authorization: Bearer your_api_key
+Content-Type: application/json
+```
 
-### 课程计划生成
-
-```go
-func (s *AIService) GenerateLessonPlan(subject, topic, level string) (string, error) {
-	prompt := fmt.Sprintf(`作为一位%s老师，请为%s水平的学生制定一个关于"%s"的详细课程计划。
-包括：
-1. 教学目标
-2. 课程大纲
-3. 教学方法
-4. 评估方式
-5. 课后作业`, subject, level, topic)
-	
-	return s.chatCompletion(prompt)
+### 请求格式
+```json
+{
+  "model": "deepseek-chat",
+  "messages": [
+    {
+      "role": "user",
+      "content": "用户消息内容"
+    }
+  ],
+  "max_tokens": 2048,
+  "temperature": 0.7,
+  "stream": false
 }
 ```
 
-### 习题生成
-
-```go
-func (s *AIService) GenerateExercises(subject, topic, difficulty string, count int) (string, error) {
-	prompt := fmt.Sprintf(`请为%s主题"%s"生成%d道%s难度的练习题。
-每道题包括：
-1. 题目描述
-2. 参考答案
-3. 解题思路
-4. 知识点说明`, subject, topic, count, difficulty)
-	
-	return s.chatCompletion(prompt)
+### 响应格式
+```json
+{
+  "id": "chatcmpl-123",
+  "object": "chat.completion",
+  "created": 1677652288,
+  "model": "deepseek-chat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "AI回复内容"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 10,
+    "completion_tokens": 20,
+    "total_tokens": 30
+  }
 }
 ```
 
-### 代码评估
+## 🔄 流式对话实现
 
+### 后端实现
+
+#### 1. HTTP流式请求
 ```go
-func (s *AIService) EvaluateCode(code, language, requirements string) (string, error) {
-	prompt := fmt.Sprintf(`请评估以下%s代码：
-代码：
-%s
+type DeepSeekService struct {
+    apiKey   string
+    baseURL  string
+    model    string
+    client   *http.Client
+}
+
+func (s *DeepSeekService) ChatStream(ctx context.Context, messages []Message, callback func(string)) error {
+    // 构建请求
+    request := DeepSeekRequest{
+        Model:       s.model,
+        Messages:    s.convertMessages(messages),
+        MaxTokens:   2048,
+        Temperature: 0.7,
+        Stream:      true,
+    }
+    
+    // 发送请求
+    reqBody, _ := json.Marshal(request)
+    req, _ := http.NewRequestWithContext(ctx, "POST", s.baseURL+"/chat/completions", bytes.NewBuffer(reqBody))
+    req.Header.Set("Authorization", "Bearer "+s.apiKey)
+    req.Header.Set("Content-Type", "application/json")
+    
+    resp, err := s.client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+    
+    // 处理流式响应
+    reader := bufio.NewReader(resp.Body)
+    for {
+        line, err := reader.ReadString('\n')
+        if err != nil {
+            if err == io.EOF {
+                break
+            }
+            return err
+        }
+        
+        // 解析SSE格式
+        if strings.HasPrefix(line, "data: ") {
+            data := strings.TrimPrefix(line, "data: ")
+            if data == "[DONE]" {
+                break
+            }
+            
+            var streamResp DeepSeekStreamResponse
+            if err := json.Unmarshal([]byte(data), &streamResp); err != nil {
+                continue
+            }
+            
+            // 调用回调函数
+            if len(streamResp.Choices) > 0 && len(streamResp.Choices[0].Delta.Content) > 0 {
+                callback(streamResp.Choices[0].Delta.Content)
+            }
+        }
+    }
+    
+    return nil
+}
+```
+
+#### 2. 消息格式转换
+```go
+func (s *DeepSeekService) convertMessages(messages []Message) []DeepSeekMessage {
+    result := make([]DeepSeekMessage, len(messages))
+    for i, msg := range messages {
+        result[i] = DeepSeekMessage{
+            Role:    msg.Role,
+            Content: msg.Content,
+        }
+    }
+    return result
+}
+```
+
+### 前端实现
+
+#### 1. 流式接收
+```javascript
+async function streamDeepSeekChat(messages) {
+    try {
+        const response = await fetch('/api/v1/chat/stream', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                messages: messages,
+                provider: 'deepseek'
+            })
+        });
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const data = JSON.parse(line.slice(6));
+                    if (data.content) {
+                        // 更新UI显示内容
+                        appendMessage(data.content);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('流式对话错误:', error);
+    }
+}
+```
+
+## 📊 编程教学场景
+
+### 1. 代码生成
+```go
+func (s *DeepSeekService) GenerateCode(language, description string) (string, error) {
+    prompt := fmt.Sprintf(`请用%s语言编写代码：%s
 
 要求：
-%s
-
-请从以下方面进行评估：
-1. 功能正确性
-2. 代码质量
-3. 性能优化
-4. 最佳实践
-5. 改进建议`, language, code, requirements)
-	
-	return s.chatCompletion(prompt)
+1. 代码要简洁清晰
+2. 添加必要的注释
+3. 遵循最佳实践
+4. 提供使用示例`, language, description)
+    
+    return s.chatCompletion(prompt)
 }
 ```
 
-## 6. 错误处理
+### 2. 代码解释
+```go
+func (s *DeepSeekService) ExplainCode(code, language string) (string, error) {
+    prompt := fmt.Sprintf(`请解释以下%s代码：
+
+```%s
+%s
+```
+
+请从以下方面进行解释：
+1. 代码功能
+2. 关键语法
+3. 执行流程
+4. 可能的改进`, language, language, code)
+    
+    return s.chatCompletion(prompt)
+}
+```
+
+### 3. 代码调试
+```go
+func (s *DeepSeekService) DebugCode(code, language, error string) (string, error) {
+    prompt := fmt.Sprintf(`请帮助调试以下%s代码：
+
+```%s
+%s
+```
+
+错误信息：
+%s
+
+请：
+1. 分析错误原因
+2. 提供修复方案
+3. 解释修复原理`, language, language, code, error)
+    
+    return s.chatCompletion(prompt)
+}
+```
+
+### 4. 编程练习生成
+```go
+func (s *DeepSeekService) GenerateExercise(language, topic, difficulty string) (string, error) {
+    prompt := fmt.Sprintf(`请为%s语言生成一道关于"%s"的%s难度编程练习。
+
+要求：
+1. 题目描述清晰
+2. 提供输入输出示例
+3. 包含解题思路
+4. 提供参考答案
+5. 说明涉及的知识点`, language, topic, difficulty)
+    
+    return s.chatCompletion(prompt)
+}
+```
+
+## 📈 错误处理
 
 ### 常见错误码
 
 | 错误码 | 说明 | 解决方案 |
 |--------|------|----------|
-| 401 | 认证失败 | 检查 API Key 是否正确 |
-| 429 | 请求频率限制 | 降低请求频率或升级套餐 |
+| 400 | 请求参数错误 | 检查请求格式和参数 |
+| 401 | 认证失败 | 检查API密钥是否正确 |
+| 403 | 权限不足 | 检查API密钥权限 |
+| 429 | 请求频率限制 | 降低请求频率 |
 | 500 | 服务器错误 | 稍后重试 |
-| 400 | 请求参数错误 | 检查请求格式 |
 
 ### 错误处理示例
-
 ```go
-func (s *AIService) handleAPIError(err error) error {
-	if strings.Contains(err.Error(), "401") {
-		return fmt.Errorf("API认证失败，请检查API Key")
-	}
-	if strings.Contains(err.Error(), "429") {
-		return fmt.Errorf("请求频率过高，请稍后重试")
-	}
-	if strings.Contains(err.Error(), "500") {
-		return fmt.Errorf("服务器错误，请稍后重试")
-	}
-	return err
+func handleDeepSeekError(resp *http.Response) error {
+    if resp.StatusCode != 200 {
+        var errorResp DeepSeekErrorResponse
+        if err := json.NewDecoder(resp.Body).Decode(&errorResp); err != nil {
+            return fmt.Errorf("HTTP %d: 未知错误", resp.StatusCode)
+        }
+        
+        switch resp.StatusCode {
+        case 400:
+            return fmt.Errorf("请求参数错误: %s", errorResp.Error.Message)
+        case 401:
+            return fmt.Errorf("认证失败: %s", errorResp.Error.Message)
+        case 403:
+            return fmt.Errorf("权限不足: %s", errorResp.Error.Message)
+        case 429:
+            return fmt.Errorf("请求频率限制: %s", errorResp.Error.Message)
+        case 500:
+            return fmt.Errorf("服务器错误: %s", errorResp.Error.Message)
+        default:
+            return fmt.Errorf("API错误(%d): %s", resp.StatusCode, errorResp.Error.Message)
+        }
+    }
+    return nil
 }
 ```
 
-## 7. 成本控制
+## 🔧 性能优化
 
-### 计费方式
-
-DeepSeek API 按 token 计费：
-- 输入 token：$0.0001 / 1K tokens
-- 输出 token：$0.0002 / 1K tokens
-
-### 优化建议
-
-1. **设置合理的 max_tokens**
-   ```yaml
-   max_tokens: 1000  # 根据实际需求设置
-   ```
-
-2. **使用系统提示词**
-   ```go
-   messages := []DeepSeekMessage{
-       {Role: "system", Content: "你是一个编程老师，请简洁回答"},
-       {Role: "user", Content: prompt},
-   }
-   ```
-
-3. **缓存常用响应**
-   ```go
-   // 使用 Redis 缓存常见问题的回答
-   cacheKey := fmt.Sprintf("ai:response:%s", hash(prompt))
-   if cached, err := redis.Get(cacheKey); err == nil {
-       return cached, nil
-   }
-   ```
-
-## 8. 监控和日志
-
-### 请求监控
-
+### 1. 连接池管理
 ```go
-func (s *AIService) logRequest(prompt string, response string, duration time.Duration) {
-	log.Printf("AI Request - Duration: %v, Tokens: %d", duration, len(prompt)+len(response))
+type DeepSeekClient struct {
+    client  *http.Client
+    apiKey  string
+    baseURL string
+}
+
+func NewDeepSeekClient(apiKey, baseURL string) *DeepSeekClient {
+    return &DeepSeekClient{
+        client: &http.Client{
+            Timeout: 60 * time.Second,
+            Transport: &http.Transport{
+                MaxIdleConns:        100,
+                MaxIdleConnsPerHost: 10,
+                IdleConnTimeout:     90 * time.Second,
+            },
+        },
+        apiKey:  apiKey,
+        baseURL: baseURL,
+    }
 }
 ```
 
-### 性能监控
-
+### 2. 请求缓存
 ```go
-func (s *AIService) monitorPerformance() {
-	// 记录响应时间
-	start := time.Now()
-	response, err := s.chatCompletion(prompt)
-	duration := time.Since(start)
-	
-	// 记录指标
-	metrics.RecordAPILatency("deepseek", duration)
-	metrics.RecordAPISuccess("deepseek", err == nil)
+type DeepSeekCache struct {
+    cache map[string]string
+    mu    sync.RWMutex
+    ttl   time.Duration
+}
+
+func (c *DeepSeekCache) Get(key string) (string, bool) {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    if value, exists := c.cache[key]; exists {
+        return value, true
+    }
+    return "", false
+}
+
+func (c *DeepSeekCache) Set(key, value string) {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.cache[key] = value
+    
+    // 设置过期时间
+    time.AfterFunc(c.ttl, func() {
+        c.mu.Lock()
+        delete(c.cache, key)
+        c.mu.Unlock()
+    })
 }
 ```
 
-## 9. 安全考虑
-
-### API Key 安全
-
-1. **环境变量存储**
-   ```bash
-   export DEEPSEEK_API_KEY="sk-your-key"
-   ```
-
-2. **配置文件权限**
-   ```bash
-   chmod 600 config/config.yaml
-   ```
-
-3. **密钥轮换**
-   - 定期更换 API Key
-   - 监控异常使用
-
-### 输入验证
-
+### 3. 并发控制
 ```go
-func (s *AIService) validateInput(prompt string) error {
-	if len(prompt) > 10000 {
-		return fmt.Errorf("输入内容过长")
-	}
-	if strings.Contains(prompt, "恶意内容") {
-		return fmt.Errorf("输入内容包含敏感信息")
-	}
-	return nil
+type DeepSeekLimiter struct {
+    semaphore chan struct{}
+    timeout   time.Duration
+}
+
+func NewDeepSeekLimiter(maxConcurrent int, timeout time.Duration) *DeepSeekLimiter {
+    return &DeepSeekLimiter{
+        semaphore: make(chan struct{}, maxConcurrent),
+        timeout:   timeout,
+    }
+}
+
+func (l *DeepSeekLimiter) Do(fn func() error) error {
+    select {
+    case l.semaphore <- struct{}{}:
+        defer func() { <-l.semaphore }()
+        return fn()
+    case <-time.After(l.timeout):
+        return fmt.Errorf("请求超时")
+    }
 }
 ```
 
-## 10. 测试
+## 📊 监控和日志
 
-### 单元测试
-
+### 1. 请求监控
 ```go
-func TestDeepSeekService(t *testing.T) {
-	service := NewDeepSeekService()
-	
-	response, err := service.Generate("Hello, how are you?")
-	if err != nil {
-		t.Fatalf("API调用失败: %v", err)
-	}
-	
-	if response == "" {
-		t.Error("响应为空")
-	}
+type DeepSeekMetrics struct {
+    requestCount   int64
+    errorCount     int64
+    totalLatency   time.Duration
+    mu             sync.Mutex
+}
+
+func (m *DeepSeekMetrics) RecordRequest(duration time.Duration, err error) {
+    m.mu.Lock()
+    defer m.mu.Unlock()
+    
+    atomic.AddInt64(&m.requestCount, 1)
+    m.totalLatency += duration
+    
+    if err != nil {
+        atomic.AddInt64(&m.errorCount, 1)
+    }
+}
+
+func (m *DeepSeekMetrics) GetStats() map[string]interface{} {
+    m.mu.Lock()
+    defer m.mu.Unlock()
+    
+    avgLatency := time.Duration(0)
+    if m.requestCount > 0 {
+        avgLatency = m.totalLatency / time.Duration(m.requestCount)
+    }
+    
+    return map[string]interface{}{
+        "total_requests":   m.requestCount,
+        "error_count":      m.errorCount,
+        "error_rate":       float64(m.errorCount) / float64(m.requestCount),
+        "avg_latency":      avgLatency,
+    }
 }
 ```
 
-### 集成测试
-
+### 2. 日志记录
 ```go
-func TestAIIntegration(t *testing.T) {
-	service := NewAIService()
-	
-	// 测试课程计划生成
-	plan, err := service.GenerateLessonPlan("Python", "函数", "初级")
-	if err != nil {
-		t.Fatalf("课程计划生成失败: %v", err)
-	}
-	
-	// 测试习题生成
-	exercises, err := service.GenerateExercises("Python", "函数", "中等", 3)
-	if err != nil {
-		t.Fatalf("习题生成失败: %v", err)
-	}
-	
-	t.Logf("课程计划: %s", plan)
-	t.Logf("习题: %s", exercises)
+func (s *DeepSeekService) logRequest(messages []Message, response string, duration time.Duration) {
+    log.Printf("DeepSeek API请求 - 消息数: %d, 响应长度: %d, 耗时: %v", 
+        len(messages), len(response), duration)
 }
 ```
 
-## 11. 部署检查清单
+## 🔒 安全考虑
 
-- [ ] 获取 DeepSeek API Key
-- [ ] 更新配置文件
-- [ ] 设置环境变量
-- [ ] 测试 API 连接
-- [ ] 配置错误处理
-- [ ] 设置监控日志
-- [ ] 配置成本控制
-- [ ] 进行安全测试
-- [ ] 运行集成测试
+### 1. API密钥管理
+```go
+type DeepSeekConfig struct {
+    APIKey  string `json:"api_key" validate:"required"`
+    BaseURL string `json:"base_url" validate:"required,url"`
+    Model   string `json:"model" validate:"required"`
+}
 
-## 12. 故障排除
-
-### API 连接问题
-
-```bash
-# 测试连接
-curl -H "Authorization: Bearer sk-your-key" \
-     https://api.deepseek.com/v1/models
+func LoadDeepSeekConfig() (*DeepSeekConfig, error) {
+    // 优先从环境变量读取
+    apiKey := os.Getenv("DEEPSEEK_API_KEY")
+    if apiKey == "" {
+        return nil, fmt.Errorf("DEEPSEEK_API_KEY环境变量未设置")
+    }
+    
+    return &DeepSeekConfig{
+        APIKey:  apiKey,
+        BaseURL: getEnvOrDefault("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"),
+        Model:   getEnvOrDefault("DEEPSEEK_MODEL", "deepseek-chat"),
+    }, nil
+}
 ```
 
-### 配置问题
-
-```bash
-# 检查配置
-go run main.go --config-check
+### 2. 输入验证
+```go
+func (s *DeepSeekService) validateInput(content string) error {
+    if len(content) > 10000 {
+        return fmt.Errorf("输入内容过长，最大支持10000字符")
+    }
+    
+    // 检查敏感内容
+    sensitiveWords := []string{"恶意内容", "攻击代码"}
+    for _, word := range sensitiveWords {
+        if strings.Contains(content, word) {
+            return fmt.Errorf("输入内容包含敏感信息")
+        }
+    }
+    
+    return nil
+}
 ```
 
-### 性能问题
+### 3. 请求限制
+```go
+type DeepSeekRateLimiter struct {
+    requests map[string][]time.Time
+    mu       sync.Mutex
+    limit    int
+    window   time.Duration
+}
 
-```bash
-# 监控请求
-curl -w "@curl-format.txt" -o /dev/null -s \
-     -X POST https://api.deepseek.com/v1/chat/completions \
-     -H "Authorization: Bearer sk-your-key" \
-     -d '{"model":"deepseek-coder","messages":[{"role":"user","content":"test"}]}'
+func (r *DeepSeekRateLimiter) Allow(userID string) bool {
+    r.mu.Lock()
+    defer r.mu.Unlock()
+    
+    now := time.Now()
+    if requests, exists := r.requests[userID]; exists {
+        // 清理过期的请求记录
+        valid := make([]time.Time, 0)
+        for _, req := range requests {
+            if now.Sub(req) < r.window {
+                valid = append(valid, req)
+            }
+        }
+        r.requests[userID] = valid
+        
+        if len(valid) >= r.limit {
+            return false
+        }
+    }
+    
+    r.requests[userID] = append(r.requests[userID], now)
+    return true
+}
 ```
 
-## 总结
+## 📚 相关文档
 
-通过以上配置，您已经成功将 DeepSeek API 集成到教学培训平台中。DeepSeek 强大的代码生成能力将为您的教学平台提供优质的 AI 辅助功能。
+- [DeepSeek官方文档](https://platform.deepseek.com/docs)
+- [API文档](../API.md) - 后端API接口说明
+- [部署指南](../DEPLOYMENT.md) - 部署配置说明
+- [项目总结](../PROJECT_SUMMARY.md) - 项目功能总结
 
-记住：
-- 妥善保管 API Key
-- 监控使用成本
-- 定期测试服务
-- 关注 API 更新 
+## 🤝 技术支持
+
+如果在配置过程中遇到问题，请：
+
+1. 检查DeepSeek API密钥是否正确
+2. 验证网络连接状态
+3. 查看API响应错误信息
+4. 检查请求格式和参数
+5. 参考DeepSeek官方文档 

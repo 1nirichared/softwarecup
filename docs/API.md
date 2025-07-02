@@ -1,10 +1,42 @@
-# API 文档
+# 智能教学实训平台 - API文档
 
-## 基础信息
+## 📋 概述
 
-- 基础URL: `http://localhost:8080/api/v1`
-- 认证方式: Bearer Token
-- 数据格式: JSON
+本文档详细说明智能教学实训平台的后端API接口，包括认证、用户管理、课程管理、练习管理、AI对话等功能。
+
+## 🔐 认证机制
+
+### JWT Token认证
+所有需要认证的接口都需要在请求头中携带JWT Token：
+
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+### Token获取
+通过登录接口获取Token，Token有效期为24小时。
+
+## 📊 响应格式
+
+### 成功响应
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    // 具体数据
+  }
+}
+```
+
+### 错误响应
+```json
+{
+  "code": 400,
+  "message": "错误信息",
+  "data": null
+}
+```
 
 ## 认证相关
 
